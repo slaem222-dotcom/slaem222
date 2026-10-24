@@ -1,0 +1,781 @@
+<title>SLAEM 리서치 데스크</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Gothic+A1:wght@500;700;800;900&family=IBM+Plex+Sans+KR:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap">
+<style>
+/* Layout: 증권사 리서치 데스크 — 상단 시세 테이프, 탭 네비, 1120px 단일 컬럼 위에 카드 그리드 */
+:root {
+  --bg: #F2F4F7;
+  --surface: #FFFFFF;
+  --surface-2: #E9EDF3;
+  --ink: #131925;
+  --muted: #5A6476;
+  --line: #D9DFE8;
+  --accent: #A8701A;
+  --accent-ink: #FFFFFF;
+  --accent-soft: #F6ECDB;
+  --up: #D13A3A;
+  --down: #2560C6;
+  --good: #1D8556;
+  --warn: #B4570F;
+  --tape: #131925;
+  --tape-ink: #E9EDF3;
+  --font-display: "Gothic A1", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-body: "IBM Plex Sans KR", "Apple SD Gothic Neo", "Malgun Gothic", sans-serif;
+  --font-mono: "IBM Plex Mono", ui-monospace, "SFMono-Regular", Menlo, monospace;
+  --r: 10px;
+}
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme="light"]) {
+    --bg: #0C1118; --surface: #141B25; --surface-2: #1B2431; --ink: #E5E9F0; --muted: #8E98A9;
+    --line: #263142; --accent: #E2AA4E; --accent-ink: #1A1408; --accent-soft: #2B2314;
+    --up: #FF6E6E; --down: #62A0FF; --good: #3DC48B; --warn: #F0954A; --tape: #05080C; --tape-ink: #C9D1DD;
+    color-scheme: dark;
+  }
+}
+:root[data-theme="dark"] {
+  --bg: #0C1118; --surface: #141B25; --surface-2: #1B2431; --ink: #E5E9F0; --muted: #8E98A9;
+  --line: #263142; --accent: #E2AA4E; --accent-ink: #1A1408; --accent-soft: #2B2314;
+  --up: #FF6E6E; --down: #62A0FF; --good: #3DC48B; --warn: #F0954A; --tape: #05080C; --tape-ink: #C9D1DD;
+  color-scheme: dark;
+}
+* { box-sizing: border-box; }
+[hidden] { display: none !important; }
+#banner:not(:empty) { margin-bottom: 20px; }
+body { background: var(--bg); color: var(--ink); font-family: var(--font-body); font-size: 15px; line-height: 1.6; }
+body::before { content: ""; position: fixed; inset: 0 0 auto; height: env(safe-area-inset-top, 0px); z-index: 10; background: var(--tape); }
+a { color: inherit; }
+button, input, select, textarea { font: inherit; color: inherit; }
+:focus-visible { outline: 2px solid var(--accent); outline-offset: 2px; }
+.mono, .num { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+.wrap { max-width: 1120px; margin: 0 auto; padding-left: max(16px, env(safe-area-inset-left, 0px)); padding-right: max(16px, env(safe-area-inset-right, 0px)); }
+
+/* 상단 테이프 */
+.tape { background: var(--tape); color: var(--tape-ink); font-family: var(--font-mono); font-size: 12.5px; overflow: hidden; white-space: nowrap; border-bottom: 1px solid var(--line); }
+.tape-track { display: inline-flex; gap: 40px; padding-block: 7px; padding-left: 100%; animation: tape 70s linear infinite; }
+.tape:hover .tape-track { animation-play-state: paused; }
+.tape-item b { color: var(--accent); font-weight: 600; margin-right: 8px; }
+@keyframes tape { to { transform: translateX(-100%); } }
+@media (prefers-reduced-motion: reduce) { .tape-track { animation: none; padding-left: 16px; } }
+
+header.top { position: sticky; top: env(safe-area-inset-top, 0px); z-index: 5; background: color-mix(in srgb, var(--bg) 88%, transparent); backdrop-filter: blur(10px); border-bottom: 1px solid var(--line); }
+.top-row { display: flex; align-items: center; gap: 20px; padding-block: 12px; flex-wrap: wrap; }
+.brand { display: flex; align-items: baseline; gap: 10px; margin-right: auto; }
+.brand-mark { font-family: var(--font-display); font-weight: 900; font-size: 22px; letter-spacing: -0.02em; }
+.brand-mark span { color: var(--accent); }
+.brand-sub { font-size: 12px; color: var(--muted); letter-spacing: 0.06em; }
+nav.tabs { display: flex; gap: 4px; overflow-x: auto; scrollbar-width: none; }
+nav.tabs button { border: 0; background: none; padding: 7px 14px; border-radius: 999px; cursor: pointer; color: var(--muted); font-weight: 500; white-space: nowrap; }
+nav.tabs button:hover { color: var(--ink); background: var(--surface-2); }
+nav.tabs button[aria-current="page"] { background: var(--ink); color: var(--bg); }
+.who { display: flex; align-items: center; gap: 8px; font-size: 13px; color: var(--muted); }
+.who img { width: 26px; height: 26px; border-radius: 50%; }
+
+main { padding-block: 28px 64px; }
+section.view { display: grid; gap: 28px; }
+.mode-banner { font-size: 13px; padding: 10px 14px; border-radius: var(--r); background: var(--accent-soft); color: var(--ink); border: 1px solid color-mix(in srgb, var(--accent) 40%, transparent); }
+
+h1, h2, h3 { font-family: var(--font-display); text-wrap: balance; margin: 0; letter-spacing: -0.01em; }
+h1 { font-size: clamp(26px, 4.2vw, 38px); font-weight: 800; line-height: 1.2; }
+h2 { font-size: 20px; font-weight: 800; }
+h3 { font-size: 16px; font-weight: 700; }
+p { margin: 0; }
+.eyebrow { font-size: 11.5px; letter-spacing: 0.12em; text-transform: uppercase; color: var(--muted); font-weight: 600; }
+.muted { color: var(--muted); }
+.small { font-size: 13px; }
+.sec-head { display: flex; align-items: end; justify-content: space-between; gap: 12px; flex-wrap: wrap; }
+
+/* hero */
+.hero { display: grid; grid-template-columns: 1.3fr 1fr; gap: 28px; align-items: end; }
+.hero p.lead { margin-top: 10px; color: var(--muted); max-width: 56ch; }
+.hero .rule { font-family: var(--font-mono); font-size: 13px; padding: 14px 16px; border-left: 3px solid var(--accent); background: var(--surface); border-radius: 0 var(--r) var(--r) 0; }
+.hero .rule code { color: var(--accent); font-weight: 600; }
+
+/* KPI */
+.kpis { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 1px; background: var(--line); border: 1px solid var(--line); border-radius: var(--r); overflow: hidden; }
+.kpi { background: var(--surface); padding: 16px 18px; display: grid; gap: 4px; min-width: 0; }
+.kpi .v { font-family: var(--font-mono); font-size: 26px; font-weight: 600; font-variant-numeric: tabular-nums; line-height: 1.15; }
+.kpi .k { font-size: 12.5px; color: var(--muted); }
+.kpi .d { font-size: 12px; color: var(--muted); }
+
+.grid-2 { display: grid; grid-template-columns: minmax(0, 1.4fr) minmax(0, 1fr); gap: 28px; }
+.stack { display: grid; gap: 12px; align-content: start; min-width: 0; }
+
+.panel { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 18px; min-width: 0; }
+
+/* news */
+.news-list { display: grid; gap: 10px; }
+.news { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px; display: grid; gap: 8px; min-width: 0; }
+.news-meta { display: flex; flex-wrap: wrap; gap: 6px 10px; align-items: center; font-size: 12.5px; color: var(--muted); }
+.news-title { font-weight: 600; font-size: 15.5px; line-height: 1.45; }
+.news-title a { text-decoration: none; }
+.news-title a:hover { text-decoration: underline; }
+.news-sum { color: var(--muted); font-size: 14px; }
+.news-actions { display: flex; gap: 8px; flex-wrap: wrap; }
+.chip { display: inline-flex; align-items: center; gap: 4px; font-size: 11.5px; font-weight: 600; padding: 2px 8px; border-radius: 999px; background: var(--surface-2); color: var(--ink); letter-spacing: 0.02em; white-space: nowrap; }
+.chip.stage { background: var(--ink); color: var(--bg); }
+.chip.acc { background: var(--accent-soft); color: var(--accent); }
+.chip.up { color: var(--up); background: color-mix(in srgb, var(--up) 12%, transparent); }
+.chip.down { color: var(--down); background: color-mix(in srgb, var(--down) 12%, transparent); }
+.chip.good { color: var(--good); background: color-mix(in srgb, var(--good) 13%, transparent); }
+.chip.warn { color: var(--warn); background: color-mix(in srgb, var(--warn) 13%, transparent); }
+.up { color: var(--up); } .down { color: var(--down); } .good { color: var(--good); } .warn { color: var(--warn); }
+
+.filters { display: flex; gap: 8px; flex-wrap: wrap; align-items: center; }
+.filters button.f { border: 1px solid var(--line); background: var(--surface); border-radius: 999px; padding: 5px 12px; font-size: 13px; cursor: pointer; }
+.filters button.f[aria-pressed="true"] { background: var(--ink); color: var(--bg); border-color: var(--ink); }
+
+/* buttons & forms */
+.btn { display: inline-flex; align-items: center; gap: 6px; border: 1px solid var(--line); background: var(--surface); border-radius: 8px; padding: 6px 12px; font-size: 13.5px; cursor: pointer; font-weight: 500; }
+.btn:hover { border-color: var(--ink); }
+.btn.primary { background: var(--accent); border-color: var(--accent); color: var(--accent-ink); font-weight: 600; }
+.btn.primary:hover { filter: brightness(1.06); }
+.btn.ghost { border-color: transparent; background: none; color: var(--muted); }
+.btn.ghost:hover { color: var(--ink); }
+.btn[disabled] { opacity: .5; cursor: not-allowed; }
+form.f { display: grid; gap: 12px; }
+.row { display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr)); gap: 12px; }
+label.fl { display: grid; gap: 4px; font-size: 12.5px; color: var(--muted); font-weight: 500; min-width: 0; }
+input.in, select.in, textarea.in { width: 100%; border: 1px solid var(--line); background: var(--bg); border-radius: 8px; padding: 8px 10px; font-size: 14px; color: var(--ink); }
+textarea.in { min-height: 72px; resize: vertical; line-height: 1.5; }
+input.in:focus, select.in:focus, textarea.in:focus { border-color: var(--accent); outline: none; }
+.seg { display: inline-flex; border: 1px solid var(--line); border-radius: 8px; overflow: hidden; }
+.seg button { border: 0; background: var(--bg); padding: 7px 14px; cursor: pointer; font-weight: 600; font-size: 13.5px; }
+.seg button[aria-pressed="true"].u { background: var(--up); color: #fff; }
+.seg button[aria-pressed="true"].d { background: var(--down); color: #fff; }
+
+/* E[R] live readout */
+.er { display: grid; grid-template-columns: repeat(4, minmax(0, 1fr)); gap: 8px; }
+.er div { background: var(--surface-2); border-radius: 8px; padding: 10px 12px; min-width: 0; }
+.er .v { font-family: var(--font-mono); font-size: 18px; font-weight: 600; font-variant-numeric: tabular-nums; }
+.er .k { font-size: 11.5px; color: var(--muted); }
+
+/* predictions */
+.pred { display: grid; grid-template-columns: 6px minmax(0, 1fr) auto; gap: 14px; background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 14px 16px 14px 0; overflow: hidden; }
+.pred .bar { background: var(--line); border-radius: 0 4px 4px 0; }
+.pred.dir-up .bar { background: var(--up); }
+.pred.dir-down .bar { background: var(--down); }
+.pred-body { display: grid; gap: 6px; min-width: 0; }
+.pred-h { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; }
+.pred-h .tk { font-family: var(--font-display); font-weight: 800; font-size: 16px; }
+.pred-side { display: grid; gap: 6px; justify-items: end; align-content: start; text-align: right; }
+.pred-side .p { font-family: var(--font-mono); font-size: 22px; font-weight: 600; }
+.reason { display: grid; grid-template-columns: 64px minmax(0, 1fr); gap: 2px 10px; font-size: 13.5px; }
+.reason dt { color: var(--muted); font-size: 12px; padding-top: 1px; }
+.reason dd { margin: 0; }
+.resolve { display: flex; gap: 6px; align-items: center; flex-wrap: wrap; }
+.resolve input { width: 110px; }
+
+table.t { width: 100%; border-collapse: collapse; font-size: 13.5px; }
+table.t th, table.t td { padding: 8px 10px; border-bottom: 1px solid var(--line); text-align: right; white-space: nowrap; }
+table.t th:first-child, table.t td:first-child { text-align: left; white-space: normal; }
+table.t th { font-size: 12px; color: var(--muted); font-weight: 600; }
+table.t td { font-family: var(--font-mono); font-variant-numeric: tabular-nums; }
+table.t td:first-child { font-family: var(--font-body); }
+.tw { overflow-x: auto; }
+
+/* study */
+.lessons { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 16px; }
+.lesson { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 20px; display: grid; gap: 10px; align-content: start; min-width: 0; }
+.lesson .n { font-family: var(--font-mono); color: var(--accent); font-size: 12px; font-weight: 600; letter-spacing: .08em; }
+.lesson p, .lesson li { font-size: 14px; max-width: 65ch; }
+.lesson ul { margin: 0; padding-left: 18px; display: grid; gap: 4px; }
+.formula { font-family: var(--font-mono); background: var(--surface-2); padding: 10px 12px; border-radius: 8px; font-size: 14px; overflow-x: auto; white-space: nowrap; }
+.lesson.wide { grid-column: 1 / -1; }
+
+/* board */
+.post { background: var(--surface); border: 1px solid var(--line); border-radius: var(--r); padding: 16px; display: grid; gap: 10px; min-width: 0; }
+.post-h { display: flex; align-items: center; gap: 10px; flex-wrap: wrap; font-size: 13px; color: var(--muted); }
+.post-h img { width: 24px; height: 24px; border-radius: 50%; }
+.post-h .nm { color: var(--ink); font-weight: 600; }
+.post-t { font-weight: 700; font-size: 16px; font-family: var(--font-display); }
+.post-b { white-space: pre-wrap; font-size: 14.5px; overflow-wrap: anywhere; }
+.quote { border-left: 3px solid var(--accent); padding: 6px 12px; background: var(--surface-2); border-radius: 0 8px 8px 0; font-size: 13px; }
+.comments { display: grid; gap: 8px; border-top: 1px solid var(--line); padding-top: 10px; }
+.cmt { display: grid; grid-template-columns: 22px minmax(0, 1fr) auto; gap: 8px; font-size: 13.5px; align-items: start; }
+.cmt img { width: 22px; height: 22px; border-radius: 50%; }
+.cmt .b { white-space: pre-wrap; overflow-wrap: anywhere; }
+.cmt-form { display: flex; gap: 8px; }
+.cmt-form input { flex: 1; min-width: 0; }
+
+.empty { border: 1px dashed var(--line); border-radius: var(--r); padding: 22px; text-align: center; color: var(--muted); font-size: 14px; }
+.toast { position: fixed; left: 50%; bottom: calc(20px + env(safe-area-inset-bottom, 0px)); transform: translateX(-50%); background: var(--ink); color: var(--bg); padding: 9px 16px; border-radius: 8px; font-size: 13.5px; z-index: 20; max-width: calc(100% - 32px); }
+details.imp summary { cursor: pointer; font-weight: 600; font-size: 14px; }
+details.imp[open] summary { margin-bottom: 12px; }
+svg text { fill: var(--muted); font-family: var(--font-mono); font-size: 10px; }
+
+@media (max-width: 860px) {
+  .hero, .grid-2, .lessons { grid-template-columns: minmax(0, 1fr); }
+  .kpis { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .er { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+}
+@media (max-width: 520px) {
+  .pred { grid-template-columns: 5px minmax(0, 1fr); }
+  .pred-side { grid-column: 2; justify-items: start; text-align: left; }
+  .brand-sub { display: none; }
+}
+</style>
+
+<div class="tape" aria-label="최근 걸러진 뉴스"><div class="tape-track" id="tape"><span class="tape-item"><b>SLAEM</b>뉴스를 불러오는 중입니다</span></div></div>
+
+<header class="top">
+  <div class="wrap top-row">
+    <div class="brand"><div class="brand-mark">SLAEM<span>.</span>desk</div><div class="brand-sub">뉴스 → 가설 → 확률 → 검증</div></div>
+    <nav class="tabs" id="tabs" aria-label="메뉴">
+      <button data-tab="home">홈</button>
+      <button data-tab="news">뉴스</button>
+      <button data-tab="predict">예측</button>
+      <button data-tab="study">공부</button>
+      <button data-tab="board">게시판</button>
+    </nav>
+    <div class="who" id="who"></div>
+  </div>
+</header>
+
+<main class="wrap">
+  <div id="banner"></div>
+
+  <!-- HOME -->
+  <section class="view" id="v-home">
+    <div class="hero">
+      <div>
+        <div class="eyebrow">오늘의 데스크 · <span id="today" class="mono"></span></div>
+        <h1 style="margin-top:8px">걸러진 뉴스로 가설을 세우고,<br>확률로 적고, 숫자로 채점합니다.</h1>
+        <p class="lead">예측마다 근거·가설·반증 조건을 남기고, 익일 결과로 Brier 점수와 실현 E[R]을 계산합니다. 승률이 아니라 기대값으로 판단하는 연습장입니다.</p>
+      </div>
+      <div class="rule">E[R] = p·W − (1−p)·L − <code>C</code><br><span class="muted">C = 0.20% (거래세 0.15 + 수수료·슬리피지 0.05)</span></div>
+    </div>
+    <div class="kpis" id="kpis"></div>
+    <div class="grid-2">
+      <div class="stack">
+        <div class="sec-head"><h2>최근 걸러진 뉴스</h2><button class="btn ghost" data-go="news">전체 보기 →</button></div>
+        <div class="news-list" id="home-news"></div>
+      </div>
+      <div class="stack">
+        <div class="sec-head"><h2>채점 대기 예측</h2><button class="btn ghost" data-go="predict">예측장 →</button></div>
+        <div class="stack" id="home-open"></div>
+        <div class="sec-head" style="margin-top:12px"><h2>게시판 새 글</h2><button class="btn ghost" data-go="board">게시판 →</button></div>
+        <div class="stack" id="home-posts"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- NEWS -->
+  <section class="view" id="v-news" hidden>
+    <div class="sec-head">
+      <div><div class="eyebrow">News filter</div><h1>걸러진 뉴스</h1></div>
+      <input class="in" id="news-q" type="search" placeholder="제목·종목 검색" style="max-width:260px">
+    </div>
+    <div class="filters" id="news-filters"></div>
+    <div id="news-admin"></div>
+    <div class="news-list" id="news-list"></div>
+  </section>
+
+  <!-- PREDICT -->
+  <section class="view" id="v-predict" hidden>
+    <div class="sec-head"><div><div class="eyebrow">Forecast journal</div><h1>예측장</h1></div></div>
+    <div class="grid-2">
+      <div class="panel">
+        <h2 style="margin-bottom:4px">새 예측</h2>
+        <p class="small muted" style="margin-bottom:14px">확률은 "익일 종가 기준 이 방향이 맞을 확률"입니다. 90%를 쉽게 쓰지 마세요.</p>
+        <form class="f" id="pred-form">
+          <div id="pred-news-link"></div>
+          <div class="row">
+            <label class="fl">종목 (이름·코드)<input class="in" id="pf-ticker" required placeholder="예: LG에너지솔루션 373220"></label>
+            <label class="fl">채점일<input class="in" id="pf-due" type="date" required></label>
+          </div>
+          <div class="row" style="align-items:end">
+            <div class="fl">방향<div class="seg" id="pf-dir"><button type="button" class="u" data-dir="up" aria-pressed="true">상승 ▲</button><button type="button" class="d" data-dir="down" aria-pressed="false">하락 ▼</button></div></div>
+            <label class="fl">확률 p <span class="mono" id="pf-p-out">60%</span><input id="pf-p" type="range" min="50" max="99" value="60"></label>
+          </div>
+          <div class="row">
+            <label class="fl">맞으면 예상 이익 W (%)<input class="in mono" id="pf-w" type="number" step="0.1" min="0" value="3"></label>
+            <label class="fl">틀리면 예상 손실 L (%)<input class="in mono" id="pf-l" type="number" step="0.1" min="0" value="2"></label>
+          </div>
+          <div class="er" id="pf-er"></div>
+          <label class="fl">① 사실 — 뉴스에서 확인된 것만<textarea class="in" id="pf-fact" placeholder="예: 메리츠증권이 내년 영업이익 전망을 56.6% 상향"></textarea></label>
+          <label class="fl">② 가설 — 왜 가격이 움직이는가<textarea class="in" id="pf-hyp" placeholder="예: 컨센서스 상향이 아직 주가에 덜 반영됐다"></textarea></label>
+          <label class="fl">③ 반증 조건 — 무엇이 보이면 틀린 것인가<textarea class="in" id="pf-fal" placeholder="예: 시초가 +3% 갭 후 거래대금 감소 → 이미 반영"></textarea></label>
+          <div><button class="btn primary" type="submit">예측 저장</button></div>
+        </form>
+      </div>
+      <div class="stack">
+        <div class="panel">
+          <div class="sec-head" style="margin-bottom:10px"><h2>보정 곡선</h2><span class="small muted">대각선에 가까울수록 확률이 정직함</span></div>
+          <div id="calib"></div>
+        </div>
+        <div class="panel"><div id="pred-stats"></div></div>
+      </div>
+    </div>
+    <div class="sec-head"><h2>내 예측</h2><div class="filters" id="pred-filters"></div></div>
+    <div class="stack" id="pred-list"></div>
+  </section>
+
+  <!-- STUDY -->
+  <section class="view" id="v-study" hidden>
+    <div><div class="eyebrow">Study room</div><h1>공부방</h1><p class="muted" style="margin-top:6px">SLAEM 검토 문서(2026-10-02)의 실제 숫자로 배우는 다섯 가지 판단 도구.</p></div>
+    <div class="lessons" id="lessons"></div>
+    <div class="grid-2">
+      <div class="panel">
+        <h2 style="margin-bottom:12px">기대값 계산기</h2>
+        <div class="row">
+          <label class="fl">승률 p (%)<input class="in mono" id="c-p" type="number" value="37.9" step="0.1"></label>
+          <label class="fl">평균 이익 W (%)<input class="in mono" id="c-w" type="number" value="2.4" step="0.1"></label>
+          <label class="fl">평균 손실 L (%)<input class="in mono" id="c-l" type="number" value="1.93" step="0.01"></label>
+          <label class="fl">비용 C (%)<input class="in mono" id="c-c" type="number" value="0.20" step="0.01"></label>
+        </div>
+        <div class="er" id="c-out" style="margin-top:12px"></div>
+        <p class="small muted" style="margin-top:10px" id="c-say"></p>
+      </div>
+      <div class="panel">
+        <div class="sec-head" style="margin-bottom:12px"><h2>공부 노트</h2><span class="small muted">나만 보임</span></div>
+        <form class="f" id="note-form">
+          <input class="in" id="nf-title" placeholder="제목 (예: 승률 49%가 폐기된 이유)" required>
+          <textarea class="in" id="nf-body" placeholder="배운 점, 다음에 확인할 데이터"></textarea>
+          <div><button class="btn primary" type="submit">노트 저장</button></div>
+        </form>
+        <div class="stack" id="note-list" style="margin-top:14px"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- BOARD -->
+  <section class="view" id="v-board" hidden>
+    <div class="sec-head"><div><div class="eyebrow">Board</div><h1>게시판</h1></div><div class="filters" id="board-filters"></div></div>
+    <div class="grid-2">
+      <div class="stack" id="post-list"></div>
+      <div class="panel" style="align-self:start">
+        <h2 style="margin-bottom:12px">글쓰기</h2>
+        <form class="f" id="post-form">
+          <div id="post-attach"></div>
+          <select class="in" id="po-cat"><option>자유</option><option>예측공유</option><option>뉴스토론</option><option>공부</option><option>질문</option></select>
+          <input class="in" id="po-title" placeholder="제목" required maxlength="120">
+          <textarea class="in" id="po-body" placeholder="데이터와 근거를 같이 적어 주세요" style="min-height:120px" required></textarea>
+          <div><button class="btn primary" type="submit">올리기</button></div>
+        </form>
+      </div>
+    </div>
+  </section>
+</main>
+<div class="toast" id="toast" hidden></div>
+
+<script>
+(() => {
+const COST = 0.20;
+const $ = (s, r = document) => r.querySelector(s);
+const esc = s => String(s ?? "").replace(/[&<>"']/g, c => ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" }[c]));
+const newId = p => p + Date.now().toString(36) + Math.random().toString(36).slice(2, 7);
+const fmt = (n, d = 2) => (n == null || isNaN(n)) ? "—" : (n > 0 ? "+" : "") + Number(n).toFixed(d);
+const pct = n => (n == null || isNaN(n)) ? "—" : (n * 100).toFixed(1) + "%";
+const kstDate = (d = new Date()) => new Date(d.getTime() + 9 * 3600e3).toISOString().slice(0, 10);
+const nextTradingDay = () => { const d = new Date(Date.now() + 9 * 3600e3); do { d.setUTCDate(d.getUTCDate() + 1); } while ([0, 6].includes(d.getUTCDay())); return d.toISOString().slice(0, 10); };
+const ago = t => { const m = Math.round((Date.now() - t) / 60000); if (m < 1) return "방금"; if (m < 60) return m + "분 전"; if (m < 1440) return Math.round(m / 60) + "시간 전"; return Math.round(m / 1440) + "일 전"; };
+const toast = msg => { const t = $("#toast"); t.textContent = msg; t.hidden = false; clearTimeout(toast.h); toast.h = setTimeout(() => t.hidden = true, 2400); };
+const ls = { get(k, d) { try { const v = localStorage.getItem(k); return v ? JSON.parse(v) : d; } catch { return d; } }, set(k, v) { try { localStorage.setItem(k, JSON.stringify(v)); } catch {} } };
+
+const S = { news: [], mine: [], posts: [], uid: null, user: null, isOwner: false, canWrite: true, live: false, profiles: {},
+  tab: "home", newsFilter: "전체", newsQ: "", predFilter: "전체", boardFilter: "전체", dir: "up", linkNews: null, attach: null, openPost: null, comments: {} };
+
+/* ---------- 저장소: claude db, 없으면 이 브라우저 로컬 ---------- */
+const B = {
+  db: null, subs: {},
+  async init() {
+    const [db, user] = await Promise.all([window.claude?.use?.("db") ?? null, window.claude?.use?.("user") ?? null]);
+    S.user = user;
+    if (user) { S.uid = await user.id(); S.isOwner = await user.isOwner(); const cw = await user.can("data.write"); S.canWrite = cw !== false; }
+    if (db && S.uid) { this.db = db; S.live = true; this.liveSubs(); }
+    else this.localSubs();
+    renderWho(); renderAll();
+  },
+  liveSubs() {
+    const db = this.db, err = e => console.warn(e);
+    db.collection("news").orderBy("date", "desc").limit(400).onSnapshot(s => { S.news = s.docs.map(d => ({ id: d.id, ...d.data() })); renderAll(); }, err);
+    db.collection("data/users/" + S.uid).onSnapshot(s => { S.mine = s.docs.map(d => ({ id: d.id, ...d.data() })); renderAll(); }, err);
+    db.collection("posts").orderBy("createdAt", "desc").limit(200).onSnapshot(s => { S.posts = s.docs.map(d => ({ id: d.id, ...d.data() })); renderAll(); }, err);
+  },
+  localSubs() {
+    const L = ls.get("slaem-desk", null) || { news: SAMPLE_NEWS, mine: [], posts: [], comments: {} };
+    this.L = L; S.uid = S.uid || "local";
+    S.news = L.news; S.mine = L.mine; S.posts = L.posts; S.comments = L.comments;
+  },
+  saveLocal() { ls.set("slaem-desk", this.L); S.news = [...this.L.news].sort((a, b) => (b.date || "").localeCompare(a.date || "")); S.mine = [...this.L.mine]; S.posts = [...this.L.posts].sort((a, b) => b.createdAt - a.createdAt); renderAll(); },
+  async put(col, id, data) {
+    if (this.db) {
+      const path = col === "mine" ? "data/users/" + S.uid : col;
+      try { await this.db.collection(path).doc(id).set(data); }
+      catch (e) { toast(e.code === "quota_exceeded" ? "저장 공간이 가득 찼습니다. 오래된 항목을 지워 주세요." : "저장하지 못했습니다. 이 페이지에 쓰기 권한이 있는지 확인해 주세요."); throw e; }
+    } else { const arr = this.L[col]; const i = arr.findIndex(x => x.id === id); const doc = { id, ...data }; i >= 0 ? arr[i] = doc : arr.push(doc); this.saveLocal(); }
+  },
+  async del(col, id) {
+    if (this.db) { const path = col === "mine" ? "data/users/" + S.uid : col; await this.db.collection(path).doc(id).delete(); }
+    else { this.L[col] = this.L[col].filter(x => x.id !== id); this.saveLocal(); }
+  },
+  watchComments(pid) {
+    if (!this.db) return;
+    if (this.subs[pid]) return;
+    this.subs[pid] = this.db.collection("posts/" + pid + "/comments").orderBy("createdAt", "asc").limit(300)
+      .onSnapshot(s => { S.comments[pid] = s.docs.map(d => ({ id: d.id, ...d.data() })); renderBoard(); }, e => console.warn(e));
+  },
+  async addComment(pid, data) {
+    const id = newId("c");
+    if (this.db) await this.db.collection("posts/" + pid + "/comments").doc(id).set(data);
+    else { (this.L.comments[pid] ||= []).push({ id, ...data }); this.saveLocal(); }
+  },
+  async delComment(pid, cid) {
+    if (this.db) await this.db.collection("posts/" + pid + "/comments").doc(cid).delete();
+    else { this.L.comments[pid] = (this.L.comments[pid] || []).filter(c => c.id !== cid); this.saveLocal(); }
+  }
+};
+
+const SAMPLE_NEWS = [
+  { id: "ex1", date: "2026-10-20", title: "메리츠證 \"LG에너지솔루션 내년 영업익 4.3조\"…전망치 56.6% 상향", source: "파이낸셜뉴스", url: "https://www.fnnews.com/news/202610200647185201", stage: "예시", tickers: "LG에너지솔루션 373220", tags: ["실적상향"], summary: "ESS 확대와 원통형 배터리 출하 증가를 근거로 2027년 영업이익 전망을 2조7770억원에서 4조3492억원으로 올림.", dayChg: null },
+  { id: "ex2", date: "2026-10-13", title: "코스피 5.46% 급락 6035선…중국 DRAM 발표에 반도체 투매", source: "서울경제 팟캐스트 요약", url: "", stage: "예시", tickers: "삼성전자 005930, SK하이닉스 000660", tags: ["지수급락"], summary: "웹 검색 요약에서 확인한 수치입니다. 원문으로 다시 확인해야 합니다.", dayChg: -5.46 },
+  { id: "ex3", date: "2026-09-08", title: "반도체 쏠림 끝? KRX 2차전지 TOP10 지수 연초 대비 21.7% 상승", source: "뉴시스", url: "https://www.newsis.com/view/NISX20260908_0003780165", stage: "예시", tickers: "2차전지 업종", tags: ["순환매"], summary: "지수 2999.63 → 3650.73. 같은 기간 삼성전자 8.56%, SK하이닉스 6.83% 상승에 그침.", dayChg: null }
+];
+
+/* ---------- 지표 계산 ---------- */
+function erOf(p, W, L, C = COST) {
+  const er = p * W - (1 - p) * L - C;
+  const be = (W + L) > 0 ? (L + C) / (W + L) : NaN;
+  const b = L > 0 ? W / L : NaN;
+  const kelly = b > 0 ? (p * b - (1 - p)) / b : NaN;
+  return { er, be, b, kelly };
+}
+function stats() {
+  const preds = S.mine.filter(x => x.kind === "pred");
+  const done = preds.filter(x => x.status === "resolved");
+  const n = done.length;
+  const hits = done.filter(x => x.hit).length;
+  const h = n ? hits / n : NaN;
+  const brier = n ? done.reduce((s, x) => s + (x.p - (x.hit ? 1 : 0)) ** 2, 0) / n : NaN;
+  const base = n ? h * (1 - h) : NaN;
+  const nets = done.map(x => (x.dir === "up" ? x.ret : -x.ret) - COST);
+  const avgNet = n ? nets.reduce((a, b) => a + b, 0) / n : NaN;
+  const wins = nets.filter(v => v > 0), losses = nets.filter(v => v <= 0);
+  const avgP = n ? done.reduce((s, x) => s + x.p, 0) / n : NaN;
+  const sorted = [...done].sort((a, b) => (a.due || "").localeCompare(b.due || ""));
+  let c = 0; const curve = sorted.map(x => (c += (x.dir === "up" ? x.ret : -x.ret) - COST));
+  return { preds, done, open: preds.filter(x => x.status !== "resolved"), n, hits, h, brier, base, avgNet, avgP, curve,
+    W: wins.length ? wins.reduce((a, b) => a + b, 0) / wins.length : NaN, L: losses.length ? -losses.reduce((a, b) => a + b, 0) / losses.length : NaN };
+}
+
+/* ---------- 렌더 ---------- */
+function renderWho() {
+  const w = $("#who");
+  if (!S.user || !S.live) { w.innerHTML = `<span class="chip warn">로컬 모드</span>`; return; }
+  S.user.me().then(me => { w.innerHTML = `<img alt="" src="${esc(me.avatarUrl)}"><span>${esc(me.name || "나")}</span>`; });
+}
+function renderBanner() {
+  $("#banner").innerHTML = S.live ? "" : `<div class="mode-banner">로컬 모드입니다. 예측·노트·글이 이 브라우저에만 저장되고 게시판이 다른 사람과 공유되지 않습니다. claude.ai에 로그인한 상태로 열면 공유 저장소에 연결됩니다.</div>`;
+}
+function newsCard(n, compact) {
+  const tags = (n.tags || []).map(t => `<span class="chip acc">${esc(t)}</span>`).join("");
+  const chg = n.dayChg == null || n.dayChg === "" ? "" : `<span class="chip ${n.dayChg > 0 ? "up" : n.dayChg < 0 ? "down" : ""} num">당일 ${fmt(+n.dayChg)}%</span>`;
+  const title = n.url ? `<a href="${esc(n.url)}" target="_blank" rel="noopener">${esc(n.title)}</a>` : esc(n.title);
+  const nPred = S.mine.filter(x => x.kind === "pred" && x.newsId === n.id).length;
+  return `<article class="news">
+    <div class="news-meta"><span class="chip stage">${esc(n.stage || "수집")}</span><span class="mono">${esc(n.date)}</span><span>${esc(n.source || "")}</span>${chg}${tags}</div>
+    <div class="news-title">${title}</div>
+    ${n.tickers ? `<div class="small"><span class="muted">종목</span> <b>${esc(n.tickers)}</b></div>` : ""}
+    ${!compact && n.summary ? `<p class="news-sum">${esc(n.summary)}</p>` : ""}
+    ${compact ? "" : `<div class="news-actions">
+      <button class="btn" data-act="predict-news" data-id="${esc(n.id)}">이 뉴스로 예측${nPred ? ` <span class="mono">(${nPred})</span>` : ""}</button>
+      <button class="btn" data-act="discuss-news" data-id="${esc(n.id)}">토론 글쓰기</button>
+      ${S.isOwner || !S.live ? `<button class="btn ghost" data-act="del-news" data-id="${esc(n.id)}">삭제</button>` : ""}
+    </div>`}
+  </article>`;
+}
+function renderTape() {
+  const items = S.news.slice(0, 14);
+  $("#tape").innerHTML = items.length ? items.map(n => `<span class="tape-item"><b>${esc(n.stage || "수집")}</b>${esc(n.tickers ? n.tickers.split(/[ ,]/)[0] + " · " : "")}${esc(n.title)}${n.dayChg != null && n.dayChg !== "" ? ` <span class="${n.dayChg > 0 ? "up" : "down"}">${fmt(+n.dayChg)}%</span>` : ""}</span>`).join("")
+    : `<span class="tape-item"><b>SLAEM</b>아직 걸러진 뉴스가 없습니다</span>`;
+}
+function renderHome() {
+  $("#today").textContent = kstDate();
+  const st = stats();
+  const brierCls = isNaN(st.brier) ? "" : st.brier < st.base ? "good" : "warn";
+  $("#kpis").innerHTML = `
+    <div class="kpi"><div class="k">모은 뉴스</div><div class="v">${S.news.length}</div><div class="d">최근 ${esc(S.news[0]?.date || "—")}</div></div>
+    <div class="kpi"><div class="k">채점 대기 / 완료</div><div class="v">${st.open.length}<span class="muted" style="font-size:16px"> / ${st.n}</span></div><div class="d">적중률 ${pct(st.h)}</div></div>
+    <div class="kpi"><div class="k">내 Brier (낮을수록 좋음)</div><div class="v ${brierCls}">${isNaN(st.brier) ? "—" : st.brier.toFixed(3)}</div><div class="d">기준선 ${isNaN(st.base) ? "—" : st.base.toFixed(3)}</div></div>
+    <div class="kpi"><div class="k">실현 E[R] / 건 (비용 차감)</div><div class="v ${st.avgNet > 0 ? "up" : st.avgNet < 0 ? "down" : ""}">${isNaN(st.avgNet) ? "—" : fmt(st.avgNet) + "%"}</div><div class="d">${spark(st.curve)}</div></div>`;
+  $("#home-news").innerHTML = S.news.length ? S.news.slice(0, 5).map(n => newsCard(n, true)).join("") : `<div class="empty">아직 뉴스가 없습니다. 뉴스 탭에서 SLAEM 결과를 가져오세요.</div>`;
+  $("#home-open").innerHTML = st.open.length ? st.open.slice(0, 4).map(predCard).join("") : `<div class="empty">채점을 기다리는 예측이 없습니다.</div>`;
+  $("#home-posts").innerHTML = S.posts.length ? S.posts.slice(0, 3).map(p => `<div class="panel" style="padding:12px 14px"><div class="small muted">${esc(p.cat)} · ${ago(p.createdAt)}</div><div style="font-weight:600">${esc(p.title)}</div></div>`).join("") : `<div class="empty">첫 글을 남겨 보세요.</div>`;
+}
+function spark(arr) {
+  if (arr.length < 2) return "누적 곡선은 2건부터";
+  const w = 120, h = 22, mn = Math.min(0, ...arr), mx = Math.max(0, ...arr), sp = (mx - mn) || 1;
+  const pts = arr.map((v, i) => `${(i / (arr.length - 1) * w).toFixed(1)},${(h - (v - mn) / sp * h).toFixed(1)}`).join(" ");
+  const zy = (h - (0 - mn) / sp * h).toFixed(1), last = arr[arr.length - 1];
+  return `<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h + 1}" aria-label="누적 실현 수익 곡선"><line x1="0" x2="${w}" y1="${zy}" y2="${zy}" stroke="var(--line)"/><polyline points="${pts}" fill="none" stroke="${last >= 0 ? "var(--up)" : "var(--down)"}" stroke-width="1.6"/></svg>`;
+}
+function renderNews() {
+  const stages = ["전체", ...new Set(S.news.map(n => n.stage || "수집"))];
+  $("#news-filters").innerHTML = stages.map(s => `<button class="f" data-nf="${esc(s)}" aria-pressed="${S.newsFilter === s}">${esc(s)}</button>`).join("");
+  const q = S.newsQ.trim().toLowerCase();
+  const list = S.news.filter(n => (S.newsFilter === "전체" || (n.stage || "수집") === S.newsFilter) && (!q || (n.title + " " + (n.tickers || "")).toLowerCase().includes(q)));
+  $("#news-list").innerHTML = list.length ? list.map(n => newsCard(n)).join("") : `<div class="empty">조건에 맞는 뉴스가 없습니다.</div>`;
+  if (S.isOwner || !S.live) {
+    if (!$("#news-admin").firstChild) $("#news-admin").innerHTML = `<div class="panel"><details class="imp"><summary>뉴스 넣기 (소유자 전용)</summary>
+      <div class="grid-2">
+        <form class="f" id="news-form">
+          <input class="in" id="nw-title" placeholder="제목" required>
+          <div class="row"><input class="in" id="nw-date" type="date" required><select class="in" id="nw-stage"><option>1차 scout</option><option>2차</option><option>3차 SEND</option><option>15:10 카드</option><option>수집</option></select></div>
+          <div class="row"><input class="in" id="nw-tk" placeholder="종목 (예: 삼성전자 005930)"><input class="in mono" id="nw-chg" type="number" step="0.01" placeholder="당일 등락 %"></div>
+          <input class="in" id="nw-src" placeholder="출처"><input class="in" id="nw-url" type="url" placeholder="원문 URL">
+          <input class="in" id="nw-tags" placeholder="태그 (쉼표 구분: NEW, DIFFERENT, 추론)">
+          <textarea class="in" id="nw-sum" placeholder="요약 / 걸러진 이유"></textarea>
+          <div><button class="btn primary">추가</button></div>
+        </form>
+        <form class="f" id="import-form">
+          <p class="small muted">SLAEM에서 내보낸 JSON 배열을 붙여 넣으면 한 번에 들어갑니다. 필드: <span class="mono">title, date, stage, tickers, dayChg, source, url, tags[], summary</span> (id가 있으면 같은 id를 덮어씁니다)</p>
+          <textarea class="in mono" id="imp-json" style="min-height:180px;font-size:12.5px" placeholder='[{"title":"…","date":"2026-10-23","stage":"3차 SEND","tickers":"…","dayChg":-2.1,"tags":["NEW","추론"]}]'></textarea>
+          <div><button class="btn">JSON 가져오기</button></div>
+        </form>
+      </div></details></div>`;
+    const d = $("#nw-date"); if (d && !d.value) d.value = kstDate();
+  } else $("#news-admin").innerHTML = "";
+}
+function predCard(x) {
+  const resolved = x.status === "resolved";
+  const net = resolved ? (x.dir === "up" ? x.ret : -x.ret) - COST : null;
+  const e = erOf(x.p, x.W ?? 0, x.L ?? 0);
+  const overdue = !resolved && x.due && x.due <= kstDate();
+  return `<article class="pred dir-${x.dir}">
+    <div class="bar"></div>
+    <div class="pred-body">
+      <div class="pred-h"><span class="tk">${esc(x.ticker)}</span><span class="chip ${x.dir === "up" ? "up" : "down"}">${x.dir === "up" ? "상승 ▲" : "하락 ▼"}</span>
+        ${resolved ? `<span class="chip ${x.hit ? "good" : "warn"}">${x.hit ? "적중" : "빗나감"}</span>` : overdue ? `<span class="chip warn">채점일 지남</span>` : `<span class="chip">채점 ${esc(x.due)}</span>`}
+        <span class="small muted mono">${esc((x.createdAt && kstDate(new Date(x.createdAt))) || "")}</span></div>
+      ${x.newsTitle ? `<div class="small muted">뉴스 · ${esc(x.newsTitle)}</div>` : ""}
+      <dl class="reason">${x.fact ? `<dt>사실</dt><dd>${esc(x.fact)}</dd>` : ""}${x.hyp ? `<dt>가설</dt><dd>${esc(x.hyp)}</dd>` : ""}${x.fal ? `<dt>반증</dt><dd>${esc(x.fal)}</dd>` : ""}</dl>
+      ${resolved ? `<div class="small">실제 익일 <b class="num ${x.ret > 0 ? "up" : x.ret < 0 ? "down" : ""}">${fmt(x.ret)}%</b> · 비용 차감 실현 <b class="num">${fmt(net)}%</b> · Brier 기여 <span class="num">${((x.p - (x.hit ? 1 : 0)) ** 2).toFixed(3)}</span></div>`
+        : `<div class="resolve"><input class="in mono" type="number" step="0.01" placeholder="익일 등락 %" id="rv-${esc(x.id)}" aria-label="실제 익일 등락률"><button class="btn primary" data-act="resolve" data-id="${esc(x.id)}">채점</button></div>`}
+    </div>
+    <div class="pred-side"><div class="p">${Math.round(x.p * 100)}%</div><div class="small muted">사전 E[R] <span class="num ${e.er > 0 ? "up" : "down"}">${fmt(e.er)}%</span></div>
+      <div style="display:flex;gap:4px"><button class="btn ghost" data-act="share-pred" data-id="${esc(x.id)}">공유</button><button class="btn ghost" data-act="del-mine" data-id="${esc(x.id)}">삭제</button></div></div>
+  </article>`;
+}
+function renderPredict() {
+  const p = +$("#pf-p").value / 100, W = +$("#pf-w").value || 0, L = +$("#pf-l").value || 0;
+  $("#pf-p-out").textContent = Math.round(p * 100) + "%";
+  const e = erOf(p, W, L);
+  $("#pf-er").innerHTML = `
+    <div><div class="k">기대값 E[R]</div><div class="v ${e.er > 0 ? "up" : "down"}">${fmt(e.er)}%</div></div>
+    <div><div class="k">손익분기 p (비용 포함)</div><div class="v">${pct(e.be)}</div></div>
+    <div><div class="k">손익비 b = W/L</div><div class="v">${isNaN(e.b) ? "—" : e.b.toFixed(2)}</div></div>
+    <div><div class="k">켈리 1/4 비중</div><div class="v">${isNaN(e.kelly) ? "—" : e.kelly <= 0 ? "0%" : (e.kelly / 4 * 100).toFixed(1) + "%"}</div></div>`;
+  $("#pred-news-link").innerHTML = S.linkNews ? `<div class="quote">연결된 뉴스 · ${esc(S.linkNews.title)} <button type="button" class="btn ghost" data-act="unlink">해제</button></div>` : "";
+  if (!$("#pf-due").value) $("#pf-due").value = nextTradingDay();
+
+  const st = stats();
+  const fl = ["전체", "대기", "완료"];
+  $("#pred-filters").innerHTML = fl.map(f => `<button class="f" data-pf="${f}" aria-pressed="${S.predFilter === f}">${f}</button>`).join("");
+  const list = st.preds.filter(x => S.predFilter === "전체" || (S.predFilter === "완료") === (x.status === "resolved")).sort((a, b) => b.createdAt - a.createdAt);
+  $("#pred-list").innerHTML = list.length ? list.map(predCard).join("") : `<div class="empty">아직 예측이 없습니다. 뉴스 탭에서 "이 뉴스로 예측"을 누르거나 위 양식을 채우세요.</div>`;
+
+  // stats panel
+  const over = st.n >= 5 && st.avgP - st.h > 0.15;
+  $("#pred-stats").innerHTML = `<h2 style="margin-bottom:10px">내 성적표</h2>
+    <div class="tw"><table class="t"><tbody>
+      <tr><td>채점 완료 n</td><td>${st.n}</td></tr>
+      <tr><td>평균 확률 vs 실제 적중률</td><td>${pct(st.avgP)} / ${pct(st.h)}</td></tr>
+      <tr><td>Brier / 기준선(적중률로 찍기)</td><td>${isNaN(st.brier) ? "—" : st.brier.toFixed(3)} / ${isNaN(st.base) ? "—" : st.base.toFixed(3)}</td></tr>
+      <tr><td>실현 평균 이익 W / 손실 L</td><td>${isNaN(st.W) ? "—" : st.W.toFixed(2)} / ${isNaN(st.L) ? "—" : st.L.toFixed(2)}</td></tr>
+      <tr><td>실현 E[R]/건 (비용 차감)</td><td class="${st.avgNet > 0 ? "up" : "down"}">${isNaN(st.avgNet) ? "—" : fmt(st.avgNet) + "%"}</td></tr>
+    </tbody></table></div>
+    <p class="small ${over ? "warn" : "muted"}" style="margin-top:10px">${st.n < 30 ? `표본 ${st.n}건. 30건 전까지는 숫자보다 기록 습관이 먼저입니다.` : ""} ${over ? "평균 확률이 실제 적중률보다 15%p 이상 높습니다. 젬마 deep confidence(90~100 표기, 실제 45%)와 같은 과신 패턴입니다." : ""}</p>`;
+  renderCalib(st.done);
+}
+function renderCalib(done) {
+  const bins = [[.5, .6], [.6, .7], [.7, .8], [.8, .9], [.9, 1.0001]];
+  const W = 320, H = 220, pad = { l: 34, r: 10, t: 10, b: 30 };
+  const x = v => pad.l + (v - .5) / .5 * (W - pad.l - pad.r), y = v => H - pad.b - v * (H - pad.t - pad.b);
+  const pts = bins.map(([a, b]) => { const g = done.filter(d => d.p >= a && d.p < b); return g.length ? { px: g.reduce((s, d) => s + d.p, 0) / g.length, hy: g.filter(d => d.hit).length / g.length, n: g.length } : null; }).filter(Boolean);
+  let s = `<svg viewBox="0 0 ${W} ${H}" style="width:100%;max-width:100%;height:auto" role="img" aria-label="예측 확률 대비 실제 적중률">`;
+  [0, .25, .5, .75, 1].forEach(v => { s += `<line x1="${pad.l}" x2="${W - pad.r}" y1="${y(v)}" y2="${y(v)}" stroke="var(--line)" stroke-width="1"/><text x="${pad.l - 6}" y="${y(v) + 3}" text-anchor="end">${v * 100}</text>`; });
+  [.5, .6, .7, .8, .9, 1].forEach(v => { s += `<text x="${x(v)}" y="${H - pad.b + 16}" text-anchor="middle">${Math.round(v * 100)}</text>`; });
+  s += `<text x="${(W + pad.l) / 2}" y="${H - 2}" text-anchor="middle">예측 확률 %</text>`;
+  s += `<line x1="${x(.5)}" y1="${y(.5)}" x2="${x(1)}" y2="${y(1)}" stroke="var(--muted)" stroke-dasharray="4 4" fill="none"/>`;
+  if (pts.length > 1) s += `<polyline fill="none" stroke="var(--accent)" stroke-width="2" points="${pts.map(p => `${x(p.px)},${y(p.hy)}`).join(" ")}"/>`;
+  pts.forEach(p => { s += `<circle cx="${x(p.px)}" cy="${y(p.hy)}" r="${3 + Math.min(6, p.n)}" fill="var(--accent)" fill-opacity=".85"/><text x="${x(p.px)}" y="${y(p.hy) - 10}" text-anchor="middle">n${p.n}</text>`; });
+  if (!pts.length) s += `<text x="${(W + pad.l) / 2}" y="${H / 2}" text-anchor="middle">채점된 예측이 쌓이면 점이 찍힙니다</text>`;
+  $("#calib").innerHTML = s + `</svg>`;
+}
+
+const LESSONS = [
+  { n: "01", t: "기대값 E[R]: 승률이 아니라 한 건당 남는 돈", b: `<div class="formula">E[R] = p·W − (1−p)·L − C</div><p>p는 승률, W와 L은 평균 이익·손실, C는 왕복 비용 0.20%입니다. SLAEM 저장본 1,207건은 p 0.379, 손익비 1.24로 <b class="down">−0.49%/건</b>이었습니다. 비용을 빼기 전에도 −0.29%였습니다. 이 경우 켈리 비율이 음수라 정답 비중은 0입니다.</p>` },
+  { n: "02", t: "승률의 함정: 49%가 폐기된 이유", b: `<p>"당일 ≤−2%" 규칙은 승률이 0.493으로 가장 높았습니다. 하지만 손익비가 0.86이라 손익분기 승률이 0.539였고, E[R]은 −0.44%였습니다. 반대로 "추론 ∧ NEW/DIFFERENT"는 승률이 0.579이고 손익비가 2.04였습니다. 다만 n=19라 결론을 내리기 전에 표본을 더 모아야 합니다.</p><div class="formula">손익분기 p = 1 / (1 + b),  b = W / L</div>` },
+  { n: "03", t: "Brier 점수: 확률이 정직한지 재는 자", b: `<div class="formula">Brier = 평균( (p − 결과)² ),  결과 ∈ {0, 1}</div><p>0에 가까울수록 좋습니다. 기준선은 "늘 평균 적중률로 찍기"입니다. 젬마 deep confidence는 361건을 전부 90~100으로 찍었는데 실제 적중률은 45%였습니다. 그래서 Brier가 <b class="warn">0.403</b>으로 기준선 0.166보다 나빴습니다. 기준선을 못 이기는 점수는 순위나 비중에 쓰지 않습니다.</p>` },
+  { n: "04", t: "켈리 1/4: 얼마나 실을지", b: `<div class="formula">f* = (p·b − (1−p)) / b,   실제 비중 = f* / 4</div><p>켈리는 p가 정확할 때만 최적입니다. 우리 p는 보정이 안 되어 있으니 1/4만 씁니다. f*가 0 이하이면 매매하지 않습니다. 예측장 입력 칸에서 실시간으로 계산됩니다.</p>` },
+  { n: "05", t: "추론 훈련: 사실 → 가설 → 반증 → 확률", wide: true, b: `<ul>
+    <li><b>사실</b>: 기사에 적힌 숫자와 주체만 씁니다. "기대감"이나 "수혜" 같은 해석어는 빼세요.</li>
+    <li><b>가설</b>: 그 사실이 왜 <i>아직</i> 가격에 덜 반영됐는지 씁니다. 이미 반영됐다면 기대값이 없습니다.</li>
+    <li><b>반증 조건</b>: 내일 무엇을 보면 틀렸다고 인정할지 미리 정합니다. 사후 합리화를 막는 유일한 장치입니다.</li>
+    <li><b>기저율부터</b>: SLAEM 저장본의 익일 상승 비율은 37.9%입니다. 근거 없이 쓰는 확률은 50%가 아니라 이 숫자에서 시작하세요.</li>
+    <li><b>표본 크기</b>: n&lt;30인 규칙의 승률은 우연일 수 있습니다. "추론 ∧ NEW/DIFFERENT"(n=19)도 아직 이 단계입니다.</li></ul>` }
+];
+const RULES = [["저장본 전체", 1207, .379, 1.24, -.49, .447], ["추론(노이즈 제외)", 57, .333, 1.63, -.39, .381], ["당일 <+2%", 982, .388, 1.31, -.38, .433], ["당일 ≤−2%", 217, .493, .86, -.44, .539], ["A: 15:10 전 1H 발동", 281, .335, 1.30, -.63, .434], ["B: 4H<0·대금 30억↑", 102, .480, 1.30, .06, .436], ["추론 ∧ NEW/DIFFERENT", 19, .579, 2.04, .81, .329], ["추론 ∧ 당일 ≤−2%", 10, .400, 2.67, .30, .273]];
+function renderStudy() {
+  if (!$("#lessons").firstChild) {
+    $("#lessons").innerHTML = LESSONS.map(l => `<article class="lesson${l.wide ? " wide" : ""}"><div class="n">LESSON ${l.n}</div><h3>${l.t}</h3>${l.b}</article>`).join("") +
+      `<article class="lesson wide"><div class="n">DATA</div><h3>SLAEM 규칙 표 (진입일 종가 → 익일 종가, C=0.20%)</h3><div class="tw"><table class="t"><thead><tr><th>규칙</th><th>n</th><th>p</th><th>b</th><th>E[R]/건</th><th>손익분기 p</th><th>판정</th></tr></thead><tbody>${RULES.map(r => `<tr><td>${r[0]}</td><td>${r[1].toLocaleString()}</td><td>${r[2].toFixed(3)}</td><td>${r[3].toFixed(2)}</td><td class="${r[4] > 0 ? "up" : "down"}">${fmt(r[4])}%</td><td>${r[5].toFixed(3)}</td><td>${r[1] < 30 ? '<span class="chip warn">표본 부족</span>' : r[4] <= .1 ? '<span class="chip">폐기</span>' : '<span class="chip good">후보</span>'}</td></tr>`).join("")}</tbody></table></div><p class="small muted">출처: 레포의 JEV_ER_정리_20261002.md 6절.</p></article>`;
+  }
+  const p = (+$("#c-p").value || 0) / 100, W = +$("#c-w").value || 0, L = +$("#c-l").value || 0, C = +$("#c-c").value || 0;
+  const e = erOf(p, W, L, C);
+  $("#c-out").innerHTML = `<div><div class="k">E[R]/건</div><div class="v ${e.er > 0 ? "up" : "down"}">${fmt(e.er)}%</div></div><div><div class="k">손익분기 p</div><div class="v">${pct(e.be)}</div></div><div><div class="k">손익비 b</div><div class="v">${isNaN(e.b) ? "—" : e.b.toFixed(2)}</div></div><div><div class="k">켈리 f*</div><div class="v">${isNaN(e.kelly) ? "—" : (e.kelly * 100).toFixed(1) + "%"}</div></div>`;
+  $("#c-say").textContent = e.er > 0 ? `승률을 ${pct(p - e.be)}p 낮춰도 손익분기입니다. 이 여유가 표본 오차보다 큰지 확인하세요.` : `승률이 ${pct(e.be - p)}p 더 높거나 손익비가 커져야 손익분기입니다. 이대로라면 비중은 0입니다.`;
+  const notes = S.mine.filter(x => x.kind === "note").sort((a, b) => b.createdAt - a.createdAt);
+  $("#note-list").innerHTML = notes.length ? notes.map(n => `<div class="quote"><div style="display:flex;justify-content:space-between;gap:8px"><b>${esc(n.title)}</b><button class="btn ghost" data-act="del-mine" data-id="${esc(n.id)}">삭제</button></div><div class="post-b">${esc(n.body)}</div><div class="small muted">${ago(n.createdAt)}</div></div>`).join("") : `<div class="empty">아직 노트가 없습니다.</div>`;
+}
+let profReq = 0;
+async function resolveNames(ids) {
+  if (!S.user || !ids.length) return;
+  const need = ids.filter(i => !S.profiles[i]);
+  if (!need.length) return;
+  const my = ++profReq;
+  const ps = await S.user.profiles(need);
+  Object.assign(S.profiles, ps);
+  if (my === profReq) renderBoard();
+}
+const nameOf = id => id === S.uid && !S.live ? "나" : (S.profiles[id]?.name || (id === S.uid ? "나" : "회원"));
+const avOf = id => S.profiles[id]?.avatarUrl || "";
+function renderBoard() {
+  const cats = ["전체", "자유", "예측공유", "뉴스토론", "공부", "질문"];
+  $("#board-filters").innerHTML = cats.map(c => `<button class="f" data-bf="${c}" aria-pressed="${S.boardFilter === c}">${c}</button>`).join("");
+  const list = S.posts.filter(p => S.boardFilter === "전체" || p.cat === S.boardFilter);
+  const ids = new Set(list.map(p => p.author));
+  Object.values(S.comments).flat().forEach(c => ids.add(c.author));
+  resolveNames([...ids].filter(Boolean));
+  $("#post-list").innerHTML = list.length ? list.map(p => {
+    const open = S.openPost === p.id, cm = S.comments[p.id] || [];
+    return `<article class="post">
+      <div class="post-h">${avOf(p.author) ? `<img alt="" src="${esc(avOf(p.author))}">` : ""}<span class="nm">${esc(nameOf(p.author))}</span><span class="chip">${esc(p.cat)}</span><span>${ago(p.createdAt)}</span></div>
+      <div class="post-t">${esc(p.title)}</div>
+      ${p.newsTitle ? `<div class="quote">뉴스 · ${p.newsUrl ? `<a href="${esc(p.newsUrl)}" target="_blank" rel="noopener">${esc(p.newsTitle)}</a>` : esc(p.newsTitle)}</div>` : ""}
+      ${p.pred ? `<div class="quote mono">${esc(p.pred)}</div>` : ""}
+      <div class="post-b">${esc(p.body)}</div>
+      <div style="display:flex;gap:6px;flex-wrap:wrap"><button class="btn" data-act="toggle-post" data-id="${esc(p.id)}">${open ? "댓글 닫기" : "댓글" + (cm.length ? " " + cm.length : "")}</button>${p.author === S.uid ? `<button class="btn ghost" data-act="del-post" data-id="${esc(p.id)}">삭제</button>` : ""}</div>
+      ${open ? `<div class="comments">${cm.map(c => `<div class="cmt">${avOf(c.author) ? `<img alt="" src="${esc(avOf(c.author))}">` : "<span></span>"}<div><b>${esc(nameOf(c.author))}</b> <span class="small muted">${ago(c.createdAt)}</span><div class="b">${esc(c.body)}</div></div>${c.author === S.uid ? `<button class="btn ghost" data-act="del-cmt" data-pid="${esc(p.id)}" data-id="${esc(c.id)}">삭제</button>` : "<span></span>"}</div>`).join("")}
+        <form class="cmt-form" data-pid="${esc(p.id)}"><input class="in" id="cm-${esc(p.id)}" placeholder="댓글 달기" maxlength="1000" required><button class="btn primary">등록</button></form></div>` : ""}
+    </article>`;
+  }).join("") : `<div class="empty">아직 글이 없습니다. 오른쪽에서 첫 글을 남기거나, 예측 카드의 "공유"를 눌러 보세요.</div>`;
+  $("#post-attach").innerHTML = S.attach ? `<div class="quote">${S.attach.newsTitle ? "뉴스 · " + esc(S.attach.newsTitle) : esc(S.attach.pred)} <button type="button" class="btn ghost" data-act="unattach">빼기</button></div>` : "";
+}
+function renderAll() {
+  renderBanner(); renderTape();
+  if (S.tab === "home") renderHome();
+  if (S.tab === "news") renderNews();
+  if (S.tab === "predict") renderPredict();
+  if (S.tab === "study") renderStudy();
+  if (S.tab === "board") renderBoard();
+}
+function go(tab) {
+  S.tab = tab;
+  document.querySelectorAll("section.view").forEach(v => v.hidden = v.id !== "v-" + tab);
+  document.querySelectorAll("#tabs button").forEach(b => b.setAttribute("aria-current", b.dataset.tab === tab ? "page" : "false"));
+  try { history.replaceState(null, "", "#" + tab); } catch {}
+  ls.set("slaem-tab", tab);
+  renderAll(); window.scrollTo({ top: 0 });
+}
+
+/* ---------- 이벤트 ---------- */
+document.addEventListener("click", async e => {
+  const t = e.target.closest("[data-tab],[data-go],[data-act],[data-nf],[data-pf],[data-bf],[data-dir]");
+  if (!t) return;
+  if (t.dataset.tab) return go(t.dataset.tab);
+  if (t.dataset.go) return go(t.dataset.go);
+  if (t.dataset.nf) { S.newsFilter = t.dataset.nf; return renderNews(); }
+  if (t.dataset.pf) { S.predFilter = t.dataset.pf; return renderPredict(); }
+  if (t.dataset.bf) { S.boardFilter = t.dataset.bf; return renderBoard(); }
+  if (t.dataset.dir) { S.dir = t.dataset.dir; document.querySelectorAll("#pf-dir button").forEach(b => b.setAttribute("aria-pressed", b.dataset.dir === S.dir)); return; }
+  const id = t.dataset.id, act = t.dataset.act;
+  const news = S.news.find(n => n.id === id), mine = S.mine.find(x => x.id === id);
+  if (act === "predict-news" && news) {
+    S.linkNews = news; go("predict");
+    $("#pf-ticker").value = news.tickers || ""; $("#pf-fact").value = news.summary || news.title; $("#pf-hyp").focus(); renderPredict();
+  }
+  if (act === "unlink") { S.linkNews = null; renderPredict(); }
+  if (act === "discuss-news" && news) { S.attach = { newsId: news.id, newsTitle: news.title, newsUrl: news.url || "" }; go("board"); $("#po-cat").value = "뉴스토론"; $("#po-title").focus(); }
+  if (act === "unattach") { S.attach = null; renderBoard(); }
+  if (act === "del-news" && news) { if (t.dataset.armed) { await B.del("news", id); toast("뉴스를 지웠습니다"); } else { t.dataset.armed = 1; t.textContent = "한 번 더 누르면 삭제"; } }
+  if (act === "del-mine" && mine) { if (t.dataset.armed) { await B.del("mine", id); toast("지웠습니다"); } else { t.dataset.armed = 1; t.textContent = "확인"; } }
+  if (act === "resolve" && mine) {
+    const v = $("#rv-" + CSS.escape(id)).value;
+    if (v === "") return toast("실제 익일 등락률(%)을 입력하세요");
+    const ret = +v, hit = mine.dir === "up" ? ret > 0 : ret < 0;
+    const { id: _, ...rest } = mine;
+    await B.put("mine", id, { ...rest, status: "resolved", ret, hit, resolvedAt: Date.now() });
+    toast(hit ? "적중으로 채점했습니다" : "빗나감으로 채점했습니다");
+  }
+  if (act === "share-pred" && mine) {
+    const r = mine.status === "resolved" ? ` → 실제 ${fmt(mine.ret)}% ${mine.hit ? "적중" : "빗나감"}` : "";
+    S.attach = { pred: `${mine.ticker} ${mine.dir === "up" ? "상승" : "하락"} p=${Math.round(mine.p * 100)}% · W ${mine.W}% / L ${mine.L}%${r}`, newsTitle: mine.newsTitle || "" };
+    go("board"); $("#po-cat").value = "예측공유"; $("#po-title").value = `${mine.ticker} ${mine.dir === "up" ? "상승" : "하락"} 예측`;
+    $("#po-body").value = [mine.fact && "사실: " + mine.fact, mine.hyp && "가설: " + mine.hyp, mine.fal && "반증 조건: " + mine.fal].filter(Boolean).join("\n");
+    renderBoard();
+  }
+  if (act === "toggle-post") { S.openPost = S.openPost === id ? null : id; if (S.openPost) B.watchComments(id); renderBoard(); }
+  if (act === "del-post") { if (t.dataset.armed) { await B.del("posts", id); toast("글을 지웠습니다"); } else { t.dataset.armed = 1; t.textContent = "한 번 더 누르면 삭제"; } }
+  if (act === "del-cmt") { await B.delComment(t.dataset.pid, id); }
+});
+document.addEventListener("input", e => {
+  if (["pf-p", "pf-w", "pf-l"].includes(e.target.id)) renderPredict();
+  if (["c-p", "c-w", "c-l", "c-c"].includes(e.target.id)) renderStudy();
+  if (e.target.id === "news-q") { S.newsQ = e.target.value; renderNews(); }
+});
+document.addEventListener("submit", async e => {
+  e.preventDefault();
+  const f = e.target;
+  try {
+    if (f.id === "pred-form") {
+      const id = newId("p");
+      await B.put("mine", id, { kind: "pred", ticker: $("#pf-ticker").value.trim(), due: $("#pf-due").value, dir: S.dir, p: +$("#pf-p").value / 100,
+        W: +$("#pf-w").value || 0, L: +$("#pf-l").value || 0, fact: $("#pf-fact").value.trim(), hyp: $("#pf-hyp").value.trim(), fal: $("#pf-fal").value.trim(),
+        newsId: S.linkNews?.id || "", newsTitle: S.linkNews?.title || "", status: "open", createdAt: Date.now() });
+      ["pf-ticker", "pf-fact", "pf-hyp", "pf-fal"].forEach(i => $("#" + i).value = ""); S.linkNews = null; toast("예측을 저장했습니다"); renderPredict();
+    }
+    if (f.id === "note-form") {
+      await B.put("mine", newId("n"), { kind: "note", title: $("#nf-title").value.trim(), body: $("#nf-body").value.trim(), createdAt: Date.now() });
+      $("#nf-title").value = ""; $("#nf-body").value = ""; toast("노트를 저장했습니다");
+    }
+    if (f.id === "post-form") {
+      if (S.live && !S.canWrite) return toast("이 페이지에 글을 쓸 권한이 없습니다. 소유자에게 참여자 권한을 요청하세요.");
+      await B.put("posts", newId("t"), { author: S.uid, cat: $("#po-cat").value, title: $("#po-title").value.trim(), body: $("#po-body").value.trim(),
+        newsId: S.attach?.newsId || "", newsTitle: S.attach?.newsTitle || "", newsUrl: S.attach?.newsUrl || "", pred: S.attach?.pred || "", createdAt: Date.now() });
+      $("#po-title").value = ""; $("#po-body").value = ""; S.attach = null; toast("글을 올렸습니다"); renderBoard();
+    }
+    if (f.classList.contains("cmt-form")) {
+      const pid = f.dataset.pid, inp = $("#cm-" + CSS.escape(pid));
+      await B.addComment(pid, { author: S.uid, body: inp.value.trim(), createdAt: Date.now() }); inp.value = "";
+    }
+    if (f.id === "news-form") {
+      const chg = $("#nw-chg").value;
+      await B.put("news", newId("n"), { title: $("#nw-title").value.trim(), date: $("#nw-date").value, stage: $("#nw-stage").value, tickers: $("#nw-tk").value.trim(),
+        dayChg: chg === "" ? null : +chg, source: $("#nw-src").value.trim(), url: $("#nw-url").value.trim(), tags: $("#nw-tags").value.split(",").map(s => s.trim()).filter(Boolean), summary: $("#nw-sum").value.trim() });
+      f.reset(); $("#nw-date").value = kstDate(); toast("뉴스를 추가했습니다");
+    }
+    if (f.id === "import-form") {
+      let arr; try { arr = JSON.parse($("#imp-json").value); } catch { return toast("JSON 형식이 아닙니다. 대괄호 [ ] 로 감싼 배열인지 확인하세요."); }
+      if (!Array.isArray(arr)) arr = [arr];
+      let ok = 0;
+      for (const n of arr) {
+        if (!n || !n.title) continue;
+        const id = /^[A-Za-z0-9_\-.~:@+]{1,200}$/.test(n.id || "") ? n.id : newId("n");
+        await B.put("news", id, { title: String(n.title), date: String(n.date || kstDate()).slice(0, 10), stage: String(n.stage || "수집"), tickers: String(n.tickers || n.ticker || ""),
+          dayChg: n.dayChg == null || n.dayChg === "" ? null : +n.dayChg, source: String(n.source || ""), url: String(n.url || ""), tags: Array.isArray(n.tags) ? n.tags.map(String) : [], summary: String(n.summary || "") });
+        ok++;
+      }
+      $("#imp-json").value = ""; toast(`${ok}건을 가져왔습니다`);
+    }
+  } catch (err) { console.warn(err); }
+});
+
+const start = ls.get("slaem-tab", "home");
+const hash = (location.hash || "").slice(1);
+go(["home", "news", "predict", "study", "board"].includes(hash) ? hash : (["home", "news", "predict", "study", "board"].includes(start) ? start : "home"));
+B.localSubs.call(B); renderAll();   // 첫 화면은 로컬 데이터로 그리고, 공유 저장소가 응답하면 교체
+B.init();
+})();
+</script>
